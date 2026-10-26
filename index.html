@@ -16104,6 +16104,7 @@ ol {
     { id: "acessorios", rotulo: "Acess\xF3rios" },
     { id: "cuidados", rotulo: "Cuidados" }
   ];
+  var LOJAS_KM = { "Bicho Feliz": 0.9, "Banho & Tosa Cheirinho": 1.4, "VetCuidar": 1.2, "Mundo Pet": 2.4 };
   var PRODUTOS = [
     { id: "pr1", cat: "racao", nome: "Ra\xE7\xE3o Premium C\xE3es Adultos 10 kg", preco: 189.9, imagem: "produto-racao.svg", rapida: true, loja: "Bicho Feliz", desc: "F\xF3rmula balanceada com prote\xEDnas de alta qualidade, indicada para c\xE3es adultos de porte m\xE9dio." },
     { id: "pr2", cat: "racao", nome: "Ra\xE7\xE3o Gatos Castrados 3 kg", preco: 94.9, imagem: "produto-racao.svg", rapida: true, loja: "Bicho Feliz", desc: "Receita com controle de calorias para gatos castrados, com fibras e \xF4mega." },
@@ -16624,6 +16625,10 @@ ol {
       o.rotulo
     ] }, o.id)) });
   }
+  var DISTANCIAS = [{ id: 1, rotulo: "At\xE9 1 km" }, { id: 3, rotulo: "At\xE9 3 km" }, { id: 99, rotulo: "Toda a cidade" }];
+  function FiltroDistancia({ dist, onChange }) {
+    return /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("div", { className: "chips-linha filtros", role: "group", "aria-label": "Localiza\xE7\xE3o", children: DISTANCIAS.map((d) => /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(Chip, { ativo: dist === d.id, onClick: () => onChange(d.id), children: d.rotulo }, d.id)) });
+  }
   function Chip({ ativo, children, onClick, icone, className = "" }) {
     return /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("button", { className: `chip ${ativo ? "ativo" : ""} ${className}`, onClick, "aria-pressed": !!ativo, children: [
       icone && /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(Icon, { name: icone, size: 15 }),
@@ -16941,12 +16946,13 @@ ol {
   // src/screens/Servicos.jsx
   var import_react5 = __toESM(require_react(), 1);
   var import_jsx_runtime7 = __toESM(require_jsx_runtime(), 1);
-  function ListaServicos({ busca = "" }) {
+  function ListaServicos({ busca = "", dist = 99, setDist }) {
     const { go } = useApp();
     const [cat, setCat] = (0, import_react5.useState)("veterinarios");
-    const itens = PROFISSIONAIS.filter((p) => busca ? contem(p.nome + p.titulo, busca) : p.categoria === cat);
+    const itens = PROFISSIONAIS.filter((p) => p.km <= dist && (busca ? contem(p.nome + p.titulo, busca) : p.categoria === cat));
     return /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)(import_jsx_runtime7.Fragment, { children: [
       !busca && /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("div", { className: "chips-linha", role: "group", "aria-label": "Tipo de servi\xE7o", children: CATEGORIAS_SERVICO.map((c) => /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(Chip, { ativo: cat === c.id, onClick: () => setCat(c.id), children: c.rotulo }, c.id)) }),
+      setDist && /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(FiltroDistancia, { dist, onChange: setDist }),
       /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)("p", { className: "legenda-lista", children: [
         /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(SeloPatinha, { size: 15 }),
         " O selo de patinha indica profissionais verificados pelo Social Pet."
@@ -17099,10 +17105,10 @@ ol {
       totalItens > 0 && /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("i", { className: "contador escuro", children: totalItens })
     ] });
   }
-  function VitrineSacolinha({ busca = "" }) {
+  function VitrineSacolinha({ busca = "", dist = 99, setDist }) {
     const { go, adicionar, toast, totalItens, subtotal } = useApp();
     const [cat, setCat] = (0, import_react6.useState)("todos");
-    const itens = PRODUTOS.filter((p) => (cat === "todos" || p.cat === cat) && contem(p.nome, busca));
+    const itens = PRODUTOS.filter((p) => (LOJAS_KM[p.loja] ?? 0) <= dist && (cat === "todos" || p.cat === cat) && contem(p.nome, busca));
     return /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(import_jsx_runtime8.Fragment, { children: [
       /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "banner-entrega", children: [
         /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(Icon, { name: "bolt", size: 20, filled: true }),
@@ -17116,6 +17122,7 @@ ol {
         ] })
       ] }),
       /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "chips-linha", role: "group", "aria-label": "Categorias de produtos", children: CATEGORIAS_PRODUTO.map((c) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(Chip, { ativo: cat === c.id, onClick: () => setCat(c.id), children: c.rotulo }, c.id)) }),
+      setDist && /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(FiltroDistancia, { dist, onChange: setDist }),
       itens.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(Vazio, { icone: "bag", texto: "Nenhum produto encontrado." }),
       /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "grade-produtos", children: itens.map((p) => /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("article", { className: "cartao-produto", children: [
         /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("button", { className: "produto-foto", onClick: () => go("produto", { id: p.id }), "aria-label": `Ver ${p.nome}`, children: [
@@ -17309,7 +17316,6 @@ ol {
     { id: "eventos", rotulo: "Eventos" },
     { id: "ongs", rotulo: "ONGs" }
   ];
-  var DISTANCIAS = [{ id: 1, rotulo: "At\xE9 1 km" }, { id: 3, rotulo: "At\xE9 3 km" }, { id: 99, rotulo: "Toda a cidade" }];
   function Secao({ titulo, acao, onAcao, children }) {
     return /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)("section", { className: "secao", children: [
       /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)("div", { className: "secao-topo", children: [
@@ -17342,10 +17348,9 @@ ol {
       ] })
     ] });
   }
-  function Descobrir({ busca }) {
+  function Descobrir({ busca, dist, setDist }) {
     const { go, seguindo, alternarSeguir, novosPosts, curtidasDe, adicionar, toast } = useApp();
     const [cat, setCat] = (0, import_react7.useState)("tudo");
-    const [dist, setDist] = (0, import_react7.useState)(99);
     const mostra = (c) => cat === "tudo" || cat === c;
     const profs = PROFISSIONAIS.filter((p) => p.km <= dist && contem(p.nome + p.titulo, busca));
     const ongs = profs.filter((p) => p.categoria === "ongs");
@@ -17355,7 +17360,7 @@ ol {
     const nada = !petsDestaque.length && !eventos.length && !ongs.length && !populares.length;
     return /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)(import_jsx_runtime9.Fragment, { children: [
       /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("div", { className: "chips-linha", role: "group", "aria-label": "Categorias", children: CATEGORIAS.map((c) => /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Chip, { ativo: cat === c.id, onClick: () => setCat(c.id), children: c.rotulo }, c.id)) }),
-      /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("div", { className: "chips-linha filtros", role: "group", "aria-label": "Localiza\xE7\xE3o", children: DISTANCIAS.map((d) => /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Chip, { ativo: dist === d.id, onClick: () => setDist(d.id), children: d.rotulo }, d.id)) }),
+      /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(FiltroDistancia, { dist, onChange: setDist }),
       nada && /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Vazio, { texto: `Nada encontrado para "${busca}".` }),
       mostra("pets") && petsDestaque.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Secao, { titulo: "Pets e tutores em destaque", children: /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("div", { className: "trilho", children: petsDestaque.map((p) => {
         const t = TUTORES[p.tutor];
@@ -17396,6 +17401,7 @@ ol {
   function Explorar() {
     const [aba, setAba] = (0, import_react7.useState)("descobrir");
     const [busca, setBusca] = (0, import_react7.useState)("");
+    const [dist, setDist] = (0, import_react7.useState)(99);
     return /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)("section", { className: "tela", children: [
       /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)("header", { className: "cabecalho-pagina", children: [
         /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("h1", { children: "Explorar" }),
@@ -17407,9 +17413,9 @@ ol {
         /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Segmented, { opcoes: [{ id: "descobrir", rotulo: "Descobrir" }, { id: "servicos", rotulo: "Servi\xE7os" }, { id: "sacolinha", rotulo: APP.sacolaNome }], valor: aba, onChange: setAba })
       ] }),
       /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)("div", { className: "rolagem com-nav", children: [
-        aba === "descobrir" && /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Descobrir, { busca }),
-        aba === "servicos" && /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(ListaServicos, { busca }),
-        aba === "sacolinha" && /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(VitrineSacolinha, { busca })
+        aba === "descobrir" && /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Descobrir, { busca, dist, setDist }),
+        aba === "servicos" && /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(ListaServicos, { busca, dist, setDist }),
+        aba === "sacolinha" && /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(VitrineSacolinha, { busca, dist, setDist })
       ] })
     ] });
   }
